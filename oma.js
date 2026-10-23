@@ -3,7 +3,10 @@
  * All facial expressions live in the same SVG as separate layers;
  * switching an expression cross-fades the layers (see .expr in style.css).
  *
- * Expressions: appalled, disappointed, skeptical, pleased, proud, caring
+ * One expression per 10 approval points, from angriest to happiest:
+ *   fuming, furious, appalled, disappointed, unimpressed, skeptical,
+ *   warming, pleased, delighted, proud, beaming
+ * Plus "caring" for serious, kind mode.
  */
 const Oma = (function () {
   'use strict';
@@ -16,23 +19,86 @@ const Oma = (function () {
   const CHEEK = '#ee9c94';
 
   const LABELS = {
+    fuming: 'is red in the face and fuming',
+    furious: 'looks furious',
     appalled: 'looks appalled',
     disappointed: 'looks disappointed',
+    unimpressed: 'looks unimpressed',
     skeptical: 'looks skeptical',
+    warming: 'is warming up to you',
     pleased: 'looks pleased',
+    delighted: 'looks delighted',
     proud: 'is beaming with pride',
+    beaming: 'is overflowing with pride and love',
     caring: 'looks at you kindly'
   };
 
+  // How red her face turns (0 = normal skin).
+  const FLUSH = { fuming: 0.6, furious: 0.38, appalled: 0.14 };
+
   const stroke = `stroke="${LINE}" stroke-linecap="round" stroke-linejoin="round"`;
   const brow = `fill="none" ${stroke} stroke-width="3.2"`;
+  const angryBrow = `fill="none" ${stroke} stroke-width="4"`;
   const line = `fill="none" ${stroke} stroke-width="3"`;
 
   const cheeks = (opacity) => `
       <ellipse cx="71" cy="114" rx="7.5" ry="4.5" fill="${CHEEK}" opacity="${opacity}"/>
       <ellipse cx="129" cy="114" rx="7.5" ry="4.5" fill="${CHEEK}" opacity="${opacity}"/>`;
 
+  const dotEyes = (r) => `
+      <circle cx="82" cy="96" r="${r}" fill="${LINE}"/>
+      <circle cx="83.2" cy="94.8" r="1.1" fill="#fff"/>
+      <circle cx="118" cy="96" r="${r}" fill="${LINE}"/>
+      <circle cx="119.2" cy="94.8" r="1.1" fill="#fff"/>`;
+
+  const happyEyes = `
+      <path d="M76 98 Q82 90 88 98" ${line}/>
+      <path d="M112 98 Q118 90 124 98" ${line}/>`;
+
+  // The position lives on the wrapper <g>, so the CSS float animation on the <path>
+  // can't override it (a CSS transform replaces an SVG transform attribute).
+  const heart = (x, y, size, color) => {
+    const s = size / 10;
+    return `<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 -3 C0 -8 -8 -9 -8 -3 C-8 2 0 7 0 7 C0 7 8 2 8 -3 C8 -9 0 -8 0 -3 Z" fill="${color}"/></g>`;
+  };
+
+  const sparkle = (x, y, r) => `<path d="M${x} ${y - r} L${x + r * 0.3} ${y - r * 0.3} L${x + r} ${y} L${x + r * 0.3} ${y + r * 0.3} L${x} ${y + r} L${x - r * 0.3} ${y + r * 0.3} L${x - r} ${y} L${x - r * 0.3} ${y - r * 0.3} Z" fill="#f2c14e" stroke="#c9952a" stroke-width="1"/>`;
+
+  // The cartoon "anger vein" on her forehead.
+  const angerMark = `
+      <g stroke="#c0392b" stroke-width="2.6" fill="none" stroke-linecap="round">
+        <path d="M130 64 q4 0 4 -4"/><path d="M138 60 q0 4 4 4"/>
+        <path d="M142 68 q-4 0 -4 4"/><path d="M134 72 q0 -4 -4 -4"/>
+      </g>`;
+
   const EXPRESSION_LAYERS = {
+    fuming: `
+      <path d="M70 75 L93 85" ${angryBrow}/>
+      <path d="M107 85 L130 75" ${angryBrow}/>
+      <path d="M75 93 L89 97" ${line}/>
+      <circle cx="84" cy="99.5" r="2.5" fill="${LINE}"/>
+      <path d="M111 97 L125 93" ${line}/>
+      <circle cx="116" cy="99.5" r="2.5" fill="${LINE}"/>
+      <rect x="85" y="118" width="30" height="12" rx="3" fill="#fff" ${stroke} stroke-width="2.5"/>
+      <path d="M85 124 L115 124 M92.5 118 L92.5 130 M100 118 L100 130 M107.5 118 L107.5 130" stroke="${LINE}" stroke-width="1.5"/>
+      ${angerMark}
+      <g class="steam">
+        <circle cx="46" cy="80" r="7" fill="#fff" stroke="#cfc8c0" stroke-width="1.5"/>
+        <circle cx="38" cy="66" r="5.5" fill="#fff" stroke="#cfc8c0" stroke-width="1.5"/>
+        <circle cx="154" cy="80" r="7" fill="#fff" stroke="#cfc8c0" stroke-width="1.5"/>
+        <circle cx="162" cy="66" r="5.5" fill="#fff" stroke="#cfc8c0" stroke-width="1.5"/>
+      </g>`,
+
+    furious: `
+      <path d="M71 77 L92 83" ${angryBrow}/>
+      <path d="M108 83 L129 77" ${angryBrow}/>
+      <path d="M76 93 L88 95.5" ${line} stroke-width="2.6"/>
+      <circle cx="83" cy="98.5" r="2.7" fill="${LINE}"/>
+      <path d="M112 95.5 L124 93" ${line} stroke-width="2.6"/>
+      <circle cx="117" cy="98.5" r="2.7" fill="${LINE}"/>
+      <path d="M88 128 Q100 117 112 128" ${line} stroke-width="3.6"/>
+      ${angerMark}`,
+
     appalled: `
       <path d="M70 76 Q81 66 92 74" ${brow}/>
       <path d="M108 74 Q119 66 130 76" ${brow}/>
@@ -54,6 +120,15 @@ const Oma = (function () {
       <path d="M89 128 Q100 119 111 128" ${line}/>
       <path d="M118 133 q4 -3 8 0 q4 -3 8 1" fill="none" stroke="#b9a99a" stroke-width="2" stroke-linecap="round"/>`,
 
+    unimpressed: `
+      <path d="M72 81 L91 81" ${brow}/>
+      <path d="M109 81 L128 81" ${brow}/>
+      <circle cx="82" cy="96" r="5" fill="#fff" stroke="${LINE}" stroke-width="1.8"/>
+      <circle cx="82" cy="92.6" r="2.3" fill="${LINE}"/>
+      <circle cx="118" cy="96" r="5" fill="#fff" stroke="${LINE}" stroke-width="1.8"/>
+      <circle cx="118" cy="92.6" r="2.3" fill="${LINE}"/>
+      <path d="M90 125 L108 123" ${line}/>`,
+
     skeptical: `
       <path d="M70 76 Q81 67 92 75" ${brow}/>
       <path d="M108 83 L130 79" ${brow}/>
@@ -62,26 +137,52 @@ const Oma = (function () {
       <path d="M112 97 L124 96" ${line}/>
       <path d="M91 125 Q98 127 110 121" ${line}/>`,
 
+    warming: `
+      <path d="M72 79 Q81 77 90 79" ${brow}/>
+      <path d="M110 79 Q119 77 128 79" ${brow}/>
+      ${dotEyes(3)}
+      <path d="M93 124 Q101 126 108 121" ${line}/>`,
+
     pleased: `
       <path d="M72 80 Q81 75 90 79" ${brow}/>
       <path d="M110 79 Q119 75 128 80" ${brow}/>
-      <circle cx="82" cy="96" r="3.3" fill="${LINE}"/>
-      <circle cx="83.2" cy="94.8" r="1.1" fill="#fff"/>
-      <circle cx="118" cy="96" r="3.3" fill="${LINE}"/>
-      <circle cx="119.2" cy="94.8" r="1.1" fill="#fff"/>
+      ${dotEyes(3.3)}
       <path d="M89 120 Q100 130 111 120" ${line}/>
       ${cheeks(0.55)}`,
+
+    delighted: `
+      <path d="M72 78 Q81 72 90 77" ${brow}/>
+      <path d="M110 77 Q119 72 128 78" ${brow}/>
+      ${happyEyes}
+      <path d="M87 119 Q100 133 113 119" ${line}/>
+      ${cheeks(0.65)}`,
 
     proud: `
       <path d="M71 77 Q81 70 91 76" ${brow}/>
       <path d="M109 76 Q119 70 129 77" ${brow}/>
-      <path d="M76 98 Q82 90 88 98" ${line}/>
-      <path d="M112 98 Q118 90 124 98" ${line}/>
+      ${happyEyes}
       <path d="M87 118 Q100 137 113 118 Z" fill="#8a3a3a" ${stroke} stroke-width="2.5"/>
       <ellipse cx="100" cy="125" rx="5" ry="2.4" fill="#e58b86"/>
       ${cheeks(0.75)}
-      <path d="M152 50 L154.5 57.5 L162 60 L154.5 62.5 L152 70 L149.5 62.5 L142 60 L149.5 57.5 Z" fill="#f2c14e" stroke="#c9952a" stroke-width="1"/>
-      <path d="M46 62 L47.8 67.2 L53 69 L47.8 70.8 L46 76 L44.2 70.8 L39 69 L44.2 67.2 Z" fill="#f2c14e" stroke="#c9952a" stroke-width="1"/>`,
+      ${sparkle(152, 60, 9)}
+      ${sparkle(46, 69, 7)}`,
+
+    beaming: `
+      <path d="M71 76 Q81 68 91 75" ${brow}/>
+      <path d="M109 75 Q119 68 129 76" ${brow}/>
+      ${happyEyes}
+      <path d="M76 103 q-2 5 1 7" fill="none" stroke="#8ec5df" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M124 103 q2 5 -1 7" fill="none" stroke="#8ec5df" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M85 116 Q100 141 115 116 Z" fill="#8a3a3a" ${stroke} stroke-width="2.5"/>
+      <ellipse cx="100" cy="127" rx="6" ry="2.8" fill="#e58b86"/>
+      ${cheeks(0.85)}
+      <g class="hearts">
+        ${heart(152, 58, 12, '#d75f5f')}
+        ${heart(44, 66, 10, '#e07b7b')}
+        ${heart(160, 88, 8, '#e07b7b')}
+        ${heart(38, 92, 7, '#d75f5f')}
+      </g>
+      ${sparkle(140, 40, 6)}`,
 
     caring: `
       <path d="M72 80 Q82 75 91 78" ${brow}/>
@@ -90,7 +191,7 @@ const Oma = (function () {
       <path d="M112 96 Q118 100.5 124 96" ${line}/>
       <path d="M93 122 Q100 126.5 107 122" ${line}/>
       ${cheeks(0.45)}
-      <path d="M150 74 C150 69 143 67 143 73 C143 77 150 81 150 81 C150 81 157 77 157 73 C157 67 150 69 150 74 Z" fill="#d77f7f" opacity="0.9"/>`
+      ${heart(150, 74, 9, '#d77f7f')}`
   };
 
   function buildSvg(initial) {
@@ -156,8 +257,9 @@ const Oma = (function () {
       <circle cx="58" cy="114" r="2.8" fill="#fffaf0" stroke="#bfb3a3" stroke-width="1"/>
       <circle cx="142" cy="114" r="2.8" fill="#fffaf0" stroke="#bfb3a3" stroke-width="1"/>
 
-      <!-- face -->
+      <!-- face, and the red flush that fades in when she gets angry -->
       <ellipse cx="100" cy="98" rx="42" ry="46" fill="${SKIN}" ${stroke} stroke-width="2.5"/>
+      <ellipse class="oma-flush" cx="100" cy="100" rx="40.5" ry="43.5" fill="#e0503c" style="opacity:${FLUSH[initial] || 0}"/>
       <path d="M66 91 L61 89 M66 97 L61 98 M134 91 L139 89 M134 97 L139 98" stroke="#d9a88a" stroke-width="1.5" stroke-linecap="round"/>
       <path d="M100 98 Q96 109 100 112 Q104 113 106 110" fill="none" stroke="#c98e6e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
 
@@ -196,7 +298,7 @@ const Oma = (function () {
     root.innerHTML = buildSvg(initial && EXPRESSION_LAYERS[initial] ? initial : 'disappointed');
   }
 
-  /** Switch Oma's face. Layers cross-fade, and she gives a little bounce. */
+  /** Switch Oma's face. Layers cross-fade, her face flushes red when angry, and she gives a little bounce. */
   function setExpression(name) {
     if (!root || !EXPRESSION_LAYERS[name]) return;
     const svg = root.querySelector('.oma-svg');
@@ -206,6 +308,8 @@ const Oma = (function () {
     svg.querySelectorAll('.expr').forEach((g) => {
       g.classList.toggle('is-active', g.dataset.expr === name);
     });
+    const flush = svg.querySelector('.oma-flush');
+    if (flush) flush.style.opacity = String(FLUSH[name] || 0);
     const title = svg.querySelector('title');
     if (title) title.textContent = `Oma Hildegard ${LABELS[name]}`;
 
