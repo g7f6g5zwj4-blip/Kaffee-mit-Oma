@@ -1,0 +1,7 @@
+{
+  "name": "oma-approved",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chat with Oma Hildegard, a disappointed German grandma. Static site plus one Vercel serverless function (api/chat.js).",
+  "license": "UNLICENSED"
+}
