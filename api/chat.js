@@ -5,7 +5,7 @@
  * Request body:  { "messages": [{ "role": "user" | "assistant", "content": "..." }], "temperature": 0.2 | 0.8 | 1.4 }
  * Response body: { "reply": "...", "approval_change": -10..10, "serious_mode": true | false }
  *
- * The API key is read from process.env.OPENAI_API_KEY and never leaves the server.
+ * The API key is read from process.env.OPENAI_KEY (or OPENAI_API_KEY) and never leaves the server.
  * The system prompt is identical for every dial setting: the dial ONLY changes temperature.
  */
 
@@ -68,9 +68,9 @@ module.exports = async function handler(req, res) {
     return send(res, 429, { error: 'Too many requests. Please wait a few minutes.' });
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.OPENAI_KEY || process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    console.error('OPENAI_API_KEY is not set');
+    console.error('Neither OPENAI_KEY nor OPENAI_API_KEY is set');
     return send(res, 500, { error: 'Server is not configured' });
   }
 
