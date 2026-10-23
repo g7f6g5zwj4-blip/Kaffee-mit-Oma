@@ -1,6 +1,6 @@
 /*
  * Oma Approved? - browser logic
- * Chat, oven dial (temperature), approval meter, confession cards and the ending with the recipe.
+ * Chat, oven dial (temperature + mood), approval meter, confession cards and the ending with the recipe.
  */
 (function () {
   'use strict';
@@ -12,7 +12,7 @@
 
   const OPENING_MESSAGE = 'Ah, there you are! Sit down, sit down. Have you eaten? Tell me, what are you doing with your life these days?';
 
-  // The dial ONLY changes the temperature sent to the API. The system prompt is the same for all three.
+  // Each setting sends its temperature to the server; the server adds the matching mood instruction.
   const OVEN_LEVELS = {
     1: { temperature: 0.2, name: 'Sunday Church Oma', angle: -55 },
     2: { temperature: 0.8, name: 'Everyday Oma', angle: 0 },
@@ -364,7 +364,8 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: state.history,
-          temperature: OVEN_LEVELS[ovenLevel].temperature
+          temperature: OVEN_LEVELS[ovenLevel].temperature,
+          approval: state.approval
         })
       });
 
