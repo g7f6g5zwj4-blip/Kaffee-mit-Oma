@@ -231,6 +231,9 @@ button { font-family: inherit; }
 
 .oma-svg.pop { animation: oma-pop 0.55s ease; }
 
+/* when fuming she shakes with rage (comes after .pop so it wins) */
+.oma-svg[data-expression="fuming"] { animation: oma-shake 0.45s ease-in-out 4; }
+
 .oma-svg .oma-figure {
   transform-origin: 100px 200px;
   animation: oma-breathe 4.5s ease-in-out infinite;
@@ -244,6 +247,28 @@ button { font-family: inherit; }
 
 .oma-svg .expr.is-active { opacity: 1; }
 
+/* red face when she is angry */
+.oma-svg .oma-flush { transition: opacity 0.7s ease; }
+
+/* steam puffs when fuming */
+.oma-svg .steam circle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: steam-rise 1.8s ease-out infinite;
+}
+
+.oma-svg .steam circle:nth-child(2),
+.oma-svg .steam circle:nth-child(4) { animation-delay: 0.9s; }
+
+/* floating hearts when beaming */
+.oma-svg .hearts path {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: heart-float 2.4s ease-in-out infinite;
+}
+
+.oma-svg .hearts path:nth-child(even) { animation-delay: 1.2s; }
+
 @keyframes oma-breathe {
   0%, 100% { transform: scale(1, 1); }
   50% { transform: scale(1.012, 1.02); }
@@ -254,6 +279,25 @@ button { font-family: inherit; }
   35% { transform: scale(1.05) rotate(-1.5deg); }
   70% { transform: scale(0.99) rotate(0.8deg); }
   100% { transform: scale(1); }
+}
+
+@keyframes oma-shake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-4px) rotate(-1.5deg); }
+  40% { transform: translateX(4px) rotate(1.5deg); }
+  60% { transform: translateX(-3px) rotate(-1deg); }
+  80% { transform: translateX(3px) rotate(1deg); }
+}
+
+@keyframes steam-rise {
+  0% { opacity: 0; transform: translateY(6px) scale(0.6); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-14px) scale(1.3); }
+}
+
+@keyframes heart-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-5px) scale(1.12); }
 }
 
 .nameplate {
@@ -557,6 +601,7 @@ button { font-family: inherit; }
 .goodbye-btn:disabled { opacity: 0.45; cursor: default; }
 
 .chat-log {
+  position: relative; /* so the recipe card can be scrolled into view */
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -566,6 +611,9 @@ button { font-family: inherit; }
   flex-direction: column;
   gap: 16px;
 }
+
+/* Never squeeze messages or the recipe card to fit; the log scrolls instead. */
+.chat-log > * { flex-shrink: 0; }
 
 .msg {
   display: flex;
@@ -640,6 +688,14 @@ button { font-family: inherit; }
 .msg-oma.is-error .bubble {
   border-style: dashed;
   border-color: #d4b9a0;
+}
+
+/* her ragequit note: scribbled in a rage */
+.msg-oma.is-angry .bubble {
+  background-color: #fff0ea;
+  border: 2px solid #d98c7a;
+  color: #7a2a20;
+  transform: rotate(-1.5deg);
 }
 
 .oven-tag {
