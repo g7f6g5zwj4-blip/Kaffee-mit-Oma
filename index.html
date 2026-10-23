@@ -143,6 +143,12 @@
         <p><strong>1. The AI model's temperature.</strong> The model writes one word after another. At <strong>low temperature</strong> (1 = 0.2) it almost always picks the most likely word, so Oma is predictable: ask the same thing twice and you get nearly the same answer. At <strong>high temperature</strong> (3 = 1.4) it takes more creative and random choices, so she surprises you.</p>
         <p><strong>2. Oma's mood instruction.</strong> On 1 she has just come home from church and is strict and proper. On 3 she has had a few glasses of Eierlikör and rambles. This instruction is added so the difference is easy to see: the temperature changes <em>how randomly</em> she picks her words, the instruction changes <em>what kind of Oma</em> she is.</p>
       </div>
+
+      <!-- Mini game: opens as a pop-up on smaller screens -->
+      <button type="button" id="game-open-btn" class="game-open-btn">
+        <svg viewBox="0 0 32 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="rgba(215,235,242,0.8)" stroke="currentColor" stroke-width="2"/><circle cx="24" cy="8" r="6" fill="rgba(215,235,242,0.8)" stroke="currentColor" stroke-width="2"/><path d="M14 7 Q16 4.5 18 7" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        Help Oma find her glasses
+      </button>
     </aside>
 
     <!-- The chat -->
@@ -176,6 +182,9 @@
         </div>
       </div>
     </section>
+
+    <!-- Mini game "Where are my glasses?" (built by game.js) -->
+    <section id="game-panel" class="game-panel" aria-label="Mini game: Where are my glasses?"></section>
   </main>
 
   <footer class="site-footer">
@@ -186,5 +195,6 @@
   <script src="recipe.js"></script>
   <script src="oma.js"></script>
   <script src="script.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>
