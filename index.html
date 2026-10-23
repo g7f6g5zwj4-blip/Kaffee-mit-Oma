@@ -139,10 +139,9 @@
       </div>
 
       <div id="oven-info" class="oven-info" hidden>
-        <p>The oven knob is the AI model's <strong>temperature</strong>. When the model writes, it picks one word after another.</p>
-        <p><strong>Low temperature</strong> (1 = 0.2): it almost always picks the most likely word, so Oma is strict and predictable. Ask the same thing twice and you get nearly the same answer.</p>
-        <p><strong>High temperature</strong> (3 = 1.4): it takes more creative and random choices, so Oma rambles and surprises you.</p>
-        <p>Her instructions never change. The knob only changes the temperature.</p>
+        <p>Turning the knob changes two things:</p>
+        <p><strong>1. The AI model's temperature.</strong> The model writes one word after another. At <strong>low temperature</strong> (1 = 0.2) it almost always picks the most likely word, so Oma is predictable: ask the same thing twice and you get nearly the same answer. At <strong>high temperature</strong> (3 = 1.4) it takes more creative and random choices, so she surprises you.</p>
+        <p><strong>2. Oma's mood instruction.</strong> On 1 she has just come home from church and is strict and proper. On 3 she has had a few glasses of Eierlikör and rambles. This instruction is added so the difference is easy to see: the temperature changes <em>how randomly</em> she picks her words, the instruction changes <em>what kind of Oma</em> she is.</p>
       </div>
     </aside>
 
@@ -181,7 +180,7 @@
 
   <footer class="site-footer">
     <p class="disclaimer">Hildegard is totally not based on my grandma.</p>
-    <p class="about">A small project for a Generative AI course. Oma's answers are written by an AI model (gpt-4.1-mini). The oven knob only changes the model's temperature, never her instructions. The Kirschtorte recipe is always the same, because tradition.</p>
+    <p class="about">A small project for a Generative AI course. Oma's answers are written by an AI model (gpt-4.1-mini). The oven knob changes the model's temperature and Oma's mood instruction. Her approval level also changes how she talks to you. The Kirschtorte recipe is always the same, because tradition.</p>
   </footer>
 
   <script src="recipe.js"></script>
