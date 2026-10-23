@@ -28,12 +28,19 @@
     "I work from home in my pyjamas"
   ];
 
+  // One face per 10 approval points. At 0 she ragequits.
   const MOODS = [
-    { max: 20, expression: 'appalled', label: 'Appalled' },
-    { max: 40, expression: 'disappointed', label: 'Disappointed' },
-    { max: 60, expression: 'skeptical', label: 'Skeptical' },
-    { max: 80, expression: 'pleased', label: 'Pleased' },
-    { max: 100, expression: 'proud', label: 'Proud and beaming' }
+    { max: 9, expression: 'fuming', label: 'Fuming' },
+    { max: 19, expression: 'furious', label: 'Furious' },
+    { max: 29, expression: 'appalled', label: 'Appalled' },
+    { max: 39, expression: 'disappointed', label: 'Disappointed' },
+    { max: 49, expression: 'unimpressed', label: 'Unimpressed' },
+    { max: 59, expression: 'skeptical', label: 'Skeptical' },
+    { max: 69, expression: 'warming', label: 'Warming up to you' },
+    { max: 79, expression: 'pleased', label: 'Pleased' },
+    { max: 89, expression: 'delighted', label: 'Delighted' },
+    { max: 99, expression: 'proud', label: 'Proud' },
+    { max: 100, expression: 'beaming', label: 'Beaming with pride' }
   ];
 
   const THINKING_LINES = [
@@ -54,6 +61,12 @@
       message: "Already going? Na gut (Alright then). Come here, let me look at you... You don't leave this house without my Kirschtorte recipe. Here, I wrote it down for you.",
       status: 'Oma is waving from the window',
       endText: 'Oma is waving from the window until you turn the corner.'
+    },
+    ragequit: {
+      message: "Das reicht! (That's enough!) I have never been so insulted in my own living room. Here, take my Kirschtorte recipe, maybe baking will teach you some decency. And now raus! (Out!) My crime series is starting.",
+      status: 'Oma has stormed off',
+      endText: 'Oma stormed off to her armchair and turned the TV up very loud. Maybe be a bit nicer next time.',
+      angry: true
     }
   };
 
@@ -70,6 +83,7 @@
     level: DEFAULT_LEVEL,
     serious: false,
     busy: false,
+    closing: false,  // the visit is about to end (nap or ragequit), no more messages
     ended: false
   };
 
@@ -129,6 +143,7 @@
     wrapper.className = `msg msg-${role}`;
     if (opts.serious) wrapper.classList.add('is-serious');
     if (opts.error) wrapper.classList.add('is-error');
+    if (opts.angry) wrapper.classList.add('is-angry');
 
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
@@ -332,25 +347,26 @@
     els.input.style.height = 'auto';
     els.input.style.height = `${Math.min(els.input.scrollHeight, 130)}px`;
 
-    els.send.disabled = state.busy || state.ended || els.input.value.trim().length === 0;
+    els.send.disabled = state.busy || state.closing || state.ended || els.input.value.trim().length === 0;
   }
 
   function setBusy(busy) {
     state.busy = busy;
-    els.goodbye.disabled = busy || state.ended;
+    els.goodbye.disabled = busy || state.closing || state.ended;
     updateInputUi();
   }
 
   // ---------- Talking to Oma ----------
   async function sendMessage(rawText) {
     const text = rawText.trim().slice(0, MAX_INPUT_CHARS);
-    if (!text || state.busy || state.ended) return;
+    if (!text || state.busy || state.closing || state.ended) return;
     if (state.userCount >= MAX_USER_MESSAGES) {
       endVisit('nap');
       return;
     }
 
     const ovenLevel = state.level;
+    let endReason = null;
     const userEl = addMessage('user', text);
     state.history.push({ role: 'user', content: text });
     els.input.value = '';
@@ -392,6 +408,16 @@
       addMessage('oma', reply, { serious, ovenLevel });
       applyApproval(serious ? 0 : toApprovalChange(data.approval_change), serious);
       renderPatience();
+
+      if (!serious && state.approval <= 0) {
+        endReason = 'ragequit';
+      } else if (state.userCount >= MAX_USER_MESSAGES) {
+        endReason = 'nap';
+      }
+      if (endReason) {
+        state.closing = true;
+        els.input.disabled = true;
+      }
     } catch (error) {
       thinking.remove();
       // Take the failed message out of the history so a retry doesn't send it twice.
@@ -406,8 +432,8 @@
       if (!els.input.value) els.input.value = text;
     } finally {
       setBusy(false);
-      if (state.userCount >= MAX_USER_MESSAGES) {
-        window.setTimeout(() => endVisit('nap'), 1200);
+      if (endReason) {
+        window.setTimeout(() => endVisit(endReason), 1400);
       } else if (prefersFinePointer) {
         els.input.focus();
       }
@@ -426,7 +452,7 @@
     els.cards.querySelectorAll('button').forEach((button) => { button.disabled = true; });
     setBusy(false);
 
-    addMessage('oma', ending.message);
+    addMessage('oma', ending.message, { angry: ending.angry });
     els.patienceText.textContent = ending.status;
 
     window.setTimeout(() => {
@@ -445,6 +471,7 @@
     state.userCount = 0;
     state.serious = false;
     state.busy = false;
+    state.closing = false;
     state.ended = false;
 
     els.log.innerHTML = '';
